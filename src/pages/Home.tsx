@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Beer } from "../types/beer";
 import BeerCard from "../components/BeerCard";
 import useApi from "../hooks/useApi";
+import Loader from "../components/common/Loader";
 
 const Home: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -37,13 +38,17 @@ const Home: React.FC = () => {
         </button>
       </div>
       {isLoading ? (
-        <div>Loading beers...</div>
+        <Loader />
       ) : error ? (
         <div className="alert alert-danger" role="alert">
           {error}
         </div>
       ) : beers && beers.length === 0 ? (
-        <div>No matching beers found.</div>
+        <div className="d-flex justify-content-center align-items-center min-vh-100">
+          <div className="text-center">
+            <p className="fs-4">No matching beers found.</p>
+          </div>
+        </div>
       ) : (
         <div className="row">
           {beers?.map((beer: Beer) => (

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Beer } from "../types/beer";
 import BeerCard from "../components/BeerCard";
+import Loader from "../components/common/Loader";
 import useApi from "../hooks/useApi";
 
 const Favorites: React.FC = () => {
@@ -49,11 +50,17 @@ const Favorites: React.FC = () => {
     <div className="container mt-4">
       <h2>Favorites</h2>
       {isLoading ? (
-        <p>Loading...</p>
+        <Loader />
       ) : error ? (
-        <p>Error: {error}</p>
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
       ) : favorites.length === 0 ? (
-        <p>You have no favorite beers yet.</p>
+        <div className="d-flex justify-content-center align-items-center min-vh-100">
+          <div className="text-center">
+            <p className="fs-4">You have no favorite beers yet.</p>
+          </div>
+        </div>
       ) : (
         <div className="row">
           {favorites.map((beer) => (
