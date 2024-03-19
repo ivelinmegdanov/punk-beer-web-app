@@ -1,65 +1,26 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { Beer } from "../types/beer";
 import BeerCard from "../components/BeerCard";
+import useApi from "../hooks/useApi";
 
 const Home: React.FC = () => {
-  const [beers, setBeers] = useState<Beer[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchBeers = async (search: string) => {
-    setIsLoading(true);
-    setError(null);
-
-    const searchQueryParam = search
-      ? `?beer_name=${search.replace(/\s/g, "_")}`
-      : "";
-
-    try {
-      const response = await axios.get<Beer[]>(
-        `https://punkapi.devlabs-projects.com/v2/beers${searchQueryParam}`
-      );
-      setBeers(response.data);
-    } catch (error) {
-      setError("Failed to fetch beers. Please try again later.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchRandomBeer = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await axios.get<Beer[]>(
-        "https://punkapi.devlabs-projects.com/v2/beers/random"
-      );
-      setBeers(response.data);
-    } catch (error) {
-      console.error("Error fetching random beer:", error);
-      setError("Failed to fetch a random beer. Please try again later.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { response: beers, error, isLoading, makeRequest } = useApi<Beer[]>();
 
   useEffect(() => {
-    fetchBeers("");
-  }, []);
-
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if (searchTerm) {
-        fetchBeers(searchTerm);
-      } else {
-        fetchBeers("");
-      }
+    const timerId = setTimeout(() => {
+      const endpoint = searchTerm
+        ? `?beer_name=${searchTerm.replace(/\s/g, "_")}`
+        : "";
+      makeRequest("GET", endpoint);
     }, 500);
 
-    return () => clearTimeout(delayDebounceFn);
+    return () => clearTimeout(timerId);
   }, [searchTerm]);
+
+  const fetchRandomBeer = () => {
+    makeRequest("GET", "/random");
+  };
 
   return (
     <div className="container mt-4">
@@ -68,6 +29,7 @@ const Home: React.FC = () => {
           type="text"
           className="form-control"
           placeholder="Search for beers..."
+          value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <button className="btn btn-info" onClick={fetchRandomBeer}>
@@ -80,11 +42,11 @@ const Home: React.FC = () => {
         <div className="alert alert-danger" role="alert">
           {error}
         </div>
-      ) : beers.length === 0 ? (
+      ) : beers && beers.length === 0 ? (
         <div>No matching beers found.</div>
       ) : (
         <div className="row">
-          {beers.map((beer) => (
+          {beers?.map((beer: Beer) => (
             <BeerCard key={beer.id} beer={beer} />
           ))}
         </div>
