@@ -52,12 +52,11 @@ const Favorites: React.FC = () => {
         <div className="row">
           {favorites.map((beer) => (
             <React.Fragment key={beer.id}>
-              <BeerCard beer={beer} />
-              {updatedBeers[beer.id] && (
-                <p className="text-warning">
-                  This beer has been updated since your last visit.
-                </p>
-              )}
+              <BeerCard
+                key={beer.id}
+                beer={beer}
+                isUpdated={updatedBeers[beer.id]}
+              />
             </React.Fragment>
           ))}
         </div>

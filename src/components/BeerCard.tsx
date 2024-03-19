@@ -4,9 +4,10 @@ import { FaStar as StarFilled, FaRegStar as StarEmpty } from "react-icons/fa";
 
 interface BeerCardProps {
   beer: Beer;
+  isUpdated?: boolean;
 }
 
-const BeerCard: React.FC<BeerCardProps> = ({ beer }) => {
+const BeerCard: React.FC<BeerCardProps> = ({ beer, isUpdated }) => {
   const [isFavorited, setIsFavorited] = useState<boolean>(false);
 
   useEffect(() => {
@@ -65,6 +66,7 @@ const BeerCard: React.FC<BeerCardProps> = ({ beer }) => {
           <p className="card-text">{beer.tagline}</p>
           <div className="d-flex justify-content-between align-items-center">
             <small className="text-muted">{beer.first_brewed}</small>
+            {isUpdated && <small className="text-warning">Updated!</small>}
           </div>
         </div>
       </div>
