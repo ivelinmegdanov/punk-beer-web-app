@@ -17,7 +17,7 @@ const Home: React.FC = () => {
     }, 500);
 
     return () => clearTimeout(timerId);
-  }, [searchTerm]);
+  }, [searchTerm, makeRequest]);
 
   const fetchRandomBeer = () => {
     makeRequest("GET", "/random");

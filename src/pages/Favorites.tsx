@@ -20,7 +20,7 @@ const Favorites: React.FC = () => {
     if (beerIds) {
       makeRequest("GET", `?ids=${beerIds}`);
     }
-  }, []);
+  }, [makeRequest]);
 
   useEffect(() => {
     if (response) {
