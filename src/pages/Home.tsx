@@ -9,12 +9,17 @@ const Home: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchBeers = async () => {
+  const fetchBeers = async (search: string) => {
     setIsLoading(true);
     setError(null);
+
+    const searchQueryParam = search
+      ? `?beer_name=${search.replace(/\s/g, "_")}`
+      : "";
+
     try {
       const response = await axios.get<Beer[]>(
-        "https://api.punkapi.com/v2/beers"
+        `https://punkapi.devlabs-projects.com/v2/beers${searchQueryParam}`
       );
       setBeers(response.data);
     } catch (error) {
@@ -29,7 +34,7 @@ const Home: React.FC = () => {
     setError(null);
     try {
       const response = await axios.get<Beer[]>(
-        "https://api.punkapi.com/v2/beers/random"
+        "https://punkapi.devlabs-projects.com/v2/beers/random"
       );
       setBeers(response.data);
     } catch (error) {
@@ -41,8 +46,20 @@ const Home: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchBeers();
+    fetchBeers("");
   }, []);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchTerm) {
+        fetchBeers(searchTerm);
+      } else {
+        fetchBeers("");
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
 
   return (
     <div className="container mt-4">
@@ -53,9 +70,6 @@ const Home: React.FC = () => {
           placeholder="Search for beers..."
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <button className="btn btn-outline-secondary" onClick={fetchBeers}>
-          Search
-        </button>
         <button className="btn btn-info" onClick={fetchRandomBeer}>
           Get Random Beer
         </button>
@@ -66,15 +80,13 @@ const Home: React.FC = () => {
         <div className="alert alert-danger" role="alert">
           {error}
         </div>
+      ) : beers.length === 0 ? (
+        <div>No matching beers found.</div>
       ) : (
         <div className="row">
-          {beers
-            .filter((beer) =>
-              beer.name.toLowerCase().includes(searchTerm.toLowerCase())
-            )
-            .map((beer) => (
-              <BeerCard key={beer.id} beer={beer} />
-            ))}
+          {beers.map((beer) => (
+            <BeerCard key={beer.id} beer={beer} />
+          ))}
         </div>
       )}
     </div>
