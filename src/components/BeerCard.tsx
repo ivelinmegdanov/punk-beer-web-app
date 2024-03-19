@@ -14,11 +14,11 @@ const BeerCard: React.FC<BeerCardProps> = ({ beer }) => {
           style={{ objectFit: "contain" }}
           width="100%"
           height="225"
-          src={beer.image_url}
-          alt={beer.name}
-          onError={(e) =>
-            (e.currentTarget.src = "https://via.placeholder.com/300x225")
+          src={
+            beer.image_url ||
+            "https://upload.wikimedia.org/wikipedia/commons/c/cc/Do_not_drink_alcohol.svg"
           }
+          alt={beer.name}
         />
         <div className="card-body">
           <h5 className="card-title">{beer.name}</h5>
