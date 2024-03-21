@@ -30,6 +30,8 @@ const BeerCard: React.FC<BeerCardProps> = ({ beer, isUpdated }) => {
     }
     localStorage.setItem("punkBeerFavorites", JSON.stringify(favorites));
     setIsFavorited(!isFavorited);
+
+    window.dispatchEvent(new CustomEvent("favoritesUpdated"));
   };
 
   const playSound = () => {

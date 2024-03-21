@@ -12,18 +12,31 @@ const Favorites: React.FC = () => {
   const { response, isLoading, error, makeRequest } = useApi<Beer[]>();
 
   useEffect(() => {
-    const storedFavorites: Beer[] = JSON.parse(
-      localStorage.getItem("punkBeerFavorites") || "[]"
-    );
-    const beerIds = storedFavorites.map((beer) => beer.id).join("|");
+    const fetchFavoritesInitially = () => {
+      const storedFavorites: Beer[] = JSON.parse(
+        localStorage.getItem("punkBeerFavorites") || "[]"
+      );
+      const beerIds = storedFavorites.map((beer) => beer.id).join("|");
 
-    if (beerIds) {
-      makeRequest("GET", `?ids=${beerIds}`);
-    }
+      if (beerIds) {
+        makeRequest("GET", `?ids=${beerIds}`);
+      }
+    };
+
+    fetchFavoritesInitially();
   }, [makeRequest]);
 
   useEffect(() => {
+    const updateFavoritesFromLocalStorage = () => {
+      const storedFavorites: Beer[] = JSON.parse(
+        localStorage.getItem("punkBeerFavorites") || "[]"
+      );
+      setFavorites(storedFavorites);
+    };
+
     if (response) {
+      setFavorites(response);
+
       const storedFavorites: Beer[] = JSON.parse(
         localStorage.getItem("punkBeerFavorites") || "[]"
       );
@@ -40,10 +53,19 @@ const Favorites: React.FC = () => {
         },
         {}
       );
-
-      setFavorites(response);
       setUpdatedBeers(updates);
     }
+
+    window.addEventListener(
+      "favoritesUpdated",
+      updateFavoritesFromLocalStorage
+    );
+
+    return () =>
+      window.removeEventListener(
+        "favoritesUpdated",
+        updateFavoritesFromLocalStorage
+      );
   }, [response]);
 
   return (
