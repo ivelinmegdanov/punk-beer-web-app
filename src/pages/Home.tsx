@@ -9,14 +9,22 @@ const Home: React.FC = () => {
   const { response: beers, error, isLoading, makeRequest } = useApi<Beer[]>();
 
   useEffect(() => {
-    const timerId = setTimeout(() => {
+    const fetchData = () => {
       const endpoint = searchTerm
         ? `?beer_name=${searchTerm.replace(/\s/g, "_")}`
         : "";
       makeRequest("GET", endpoint);
-    }, 500);
+    };
 
-    return () => clearTimeout(timerId);
+    if (searchTerm === "") {
+      fetchData();
+    } else {
+      const timerId = setTimeout(() => {
+        fetchData();
+      }, 500);
+
+      return () => clearTimeout(timerId);
+    }
   }, [searchTerm, makeRequest]);
 
   const fetchRandomBeer = () => {
