@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Beer } from "../types/beer";
 import { FaStar as StarFilled, FaRegStar as StarEmpty } from "react-icons/fa";
+import beerOpenSound from "../assets/sounds/beer-open.mp3";
 
 interface BeerCardProps {
   beer: Beer;
@@ -31,13 +32,18 @@ const BeerCard: React.FC<BeerCardProps> = ({ beer, isUpdated }) => {
     setIsFavorited(!isFavorited);
   };
 
+  const playSound = () => {
+    const audio = new Audio(beerOpenSound);
+    audio.play();
+  };
+
   return (
     <div className="col-md-4">
       <div className="card mb-4 shadow-sm">
         <div style={{ position: "relative" }}>
           <img
             className="card-img-top mt-2"
-            style={{ objectFit: "contain" }}
+            style={{ objectFit: "contain", cursor: "pointer" }}
             width="100%"
             height="225"
             src={
@@ -45,6 +51,7 @@ const BeerCard: React.FC<BeerCardProps> = ({ beer, isUpdated }) => {
               "https://upload.wikimedia.org/wikipedia/commons/c/cc/Do_not_drink_alcohol.svg"
             }
             alt={beer.name}
+            onClick={playSound}
           />
           <button
             style={{
