@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Beer } from "../types/beer";
+import { Link } from "react-router-dom";
 import { FaStar as StarFilled, FaRegStar as StarEmpty } from "react-icons/fa";
+import { Beer } from "../types/beer";
 import { isValidImageUrl } from "../utils/validateImageUrl";
 import beerOpenSound from "../assets/sounds/beer-open.mp3";
 
@@ -81,6 +82,12 @@ const BeerCard: React.FC<BeerCardProps> = ({ beer, isUpdated }) => {
             <small className="text-muted">price: {beer.price}$</small>
             {isUpdated && <small className="text-warning">Updated!</small>}
           </div>
+          <Link
+            to={`/beer/${beer.id}`}
+            className="btn btn-sm btn-outline-info mt-2"
+          >
+            View Details
+          </Link>
         </div>
       </div>
     </div>
