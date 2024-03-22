@@ -4,6 +4,10 @@ The Punk Beer Web App is a project developed as a task for LimeChain. It showcas
 
 #### ! Due to the upcoming shutdown of PunkAPI, we have hosted the API data ourselves.
 
+## Publicly hosted:
+- [Web2 app](https://65fdf5ae3ad3b6681a2b938e--chipper-pony-bb305d.netlify.app/ )
+- [Web3 app](https://65fdf9aeab32b26c378e1638--stirring-madeleine-cffa51.netlify.app/ )
+
 ## Features
 
 Web2 Version:
