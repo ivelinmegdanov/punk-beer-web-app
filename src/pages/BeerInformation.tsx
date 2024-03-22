@@ -1,5 +1,5 @@
-import React from "react";
-import { useReadContract } from "wagmi";
+import React, { useState } from "react";
+import { useReadContract, useWriteContract } from "wagmi";
 import { useParams, useNavigate } from "react-router-dom";
 import { wagmiContractConfig } from "../config/wagmiConfig";
 import { isValidImageUrl } from "../utils/validateImageUrl";
@@ -7,6 +7,7 @@ import Loader from "../components/common/Loader";
 
 const BeerInformation: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [rating, setRating] = useState("");
   const navigate = useNavigate();
 
   const { data, error, isLoading } = useReadContract({
@@ -15,8 +16,30 @@ const BeerInformation: React.FC = () => {
     args: [id],
   });
 
+  const {
+    data: hash,
+    writeContract,
+    isPending,
+    error: writeError,
+  } = useWriteContract();
+
   const handleBack = () => {
     navigate(-1);
+  };
+
+  const handleRatingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRating(e.target.value);
+  };
+
+  const handleRatingSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (rating) {
+      writeContract({
+        ...wagmiContractConfig,
+        functionName: "rateBeer",
+        args: [id, Number(rating)],
+      });
+    }
   };
 
   if (isLoading) {
@@ -84,6 +107,45 @@ const BeerInformation: React.FC = () => {
           )}
         </div>
       </div>
+      <div className="d-flex justify-content-center">
+        <form
+          className="d-flex flex-column justify-content-center"
+          onSubmit={handleRatingSubmit}
+        >
+          <div className="mb-3">
+            <label htmlFor="rating" className="form-label">
+              Rate this beer (1-5)
+            </label>
+            <input
+              type="number"
+              className="form-control"
+              id="rating"
+              value={rating}
+              onChange={handleRatingChange}
+              min="1"
+              max="5"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={isPending}
+          >
+            Submit Rating
+          </button>
+        </form>
+      </div>
+      {writeError && (
+        <div className="alert mt-3 alert-danger overflow-hidden" role="alert">
+          {writeError.message}
+        </div>
+      )}
+      {hash && (
+        <div className="alert mt-3 alert-success overflow-hidden" role="alert">
+          Success! Transaction hash: {hash}
+        </div>
+      )}
     </>
   );
 };
