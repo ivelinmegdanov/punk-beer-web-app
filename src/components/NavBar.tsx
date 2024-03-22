@@ -35,6 +35,11 @@ const Navbar = () => {
                 Favorites
               </Link>
             </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/add-beer">
+                Add Beer
+              </Link>
+            </li>
             {isConnected && (
               <li className="nav-item d-flex align-items-center ms-4">
                 <span className="navbar-text text-success me-2">
