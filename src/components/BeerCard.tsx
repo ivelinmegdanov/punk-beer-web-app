@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Beer } from "../types/beer";
 import { FaStar as StarFilled, FaRegStar as StarEmpty } from "react-icons/fa";
+import { isValidImageUrl } from "../utils/validateImageUrl";
 import beerOpenSound from "../assets/sounds/beer-open.mp3";
 
 interface BeerCardProps {
@@ -10,6 +11,12 @@ interface BeerCardProps {
 
 const BeerCard: React.FC<BeerCardProps> = ({ beer, isUpdated }) => {
   const [isFavorited, setIsFavorited] = useState<boolean>(false);
+
+  const placeholderImageUrl =
+    "https://upload.wikimedia.org/wikipedia/commons/c/cc/Do_not_drink_alcohol.svg";
+  const imageUrl = isValidImageUrl(beer.image_url)
+    ? beer.image_url
+    : placeholderImageUrl;
 
   useEffect(() => {
     const favorites: Beer[] = JSON.parse(
@@ -48,10 +55,7 @@ const BeerCard: React.FC<BeerCardProps> = ({ beer, isUpdated }) => {
             style={{ objectFit: "contain", cursor: "pointer" }}
             width="100%"
             height="225"
-            src={
-              beer.image_url ||
-              "https://upload.wikimedia.org/wikipedia/commons/c/cc/Do_not_drink_alcohol.svg"
-            }
+            src={imageUrl}
             alt={beer.name}
             onClick={playSound}
           />
@@ -72,9 +76,9 @@ const BeerCard: React.FC<BeerCardProps> = ({ beer, isUpdated }) => {
         </div>
         <div className="card-body">
           <h5 className="card-title">{beer.name}</h5>
-          <p className="card-text">{beer.tagline}</p>
+          <p className="card-text">Brewery: {beer.brewery}</p>
           <div className="d-flex justify-content-between align-items-center">
-            <small className="text-muted">{beer.first_brewed}</small>
+            <small className="text-muted">price: {beer.price}$</small>
             {isUpdated && <small className="text-warning">Updated!</small>}
           </div>
         </div>
