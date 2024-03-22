@@ -32,6 +32,27 @@ const Favorites: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    const updateFavoritesFromLocalStorage = () => {
+      const storedFavorites: number[] = JSON.parse(
+        localStorage.getItem("punkBeerFavorites") || "[]"
+      ).map((fav: Beer) => fav.id);
+      setFavorites([]);
+      setCurrentIds(storedFavorites);
+    };
+
+    window.addEventListener(
+      "favoritesUpdated",
+      updateFavoritesFromLocalStorage
+    );
+
+    return () =>
+      window.removeEventListener(
+        "favoritesUpdated",
+        updateFavoritesFromLocalStorage
+      );
+  }, []);
+
+  useEffect(() => {
     if (!isContractLoading && currentId !== undefined) {
       if (data) {
         const beerData: Beer = {
