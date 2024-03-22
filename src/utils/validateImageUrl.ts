@@ -1,3 +1,5 @@
 export const isValidImageUrl = (url: string): boolean => {
-  return /\.(jpeg|jpg|gif|png|svg)$/i.test(url);
+  const hasImageExtension = /\.(jpeg|jpg|gif|png|svg)$/i.test(url);
+
+  return hasImageExtension;
 };
