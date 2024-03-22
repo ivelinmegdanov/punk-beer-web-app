@@ -1,99 +1,103 @@
 import React, { useEffect, useState } from "react";
-import { Beer } from "../types/beer";
+import { useReadContract } from "wagmi";
+import { wagmiContractConfig } from "../config/wagmiConfig";
 import BeerCard from "../components/BeerCard";
 import Loader from "../components/common/Loader";
-import useApi from "../hooks/useApi";
+import { Beer } from "../types/beer";
 
 const Favorites: React.FC = () => {
   const [favorites, setFavorites] = useState<Beer[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentIds, setCurrentIds] = useState<number[]>([]);
   const [updatedBeers, setUpdatedBeers] = useState<{ [key: number]: boolean }>(
     {}
   );
-  const { response, isLoading, error, makeRequest } = useApi<Beer[]>();
+
+  const currentId = currentIds[0];
+  const {
+    data,
+    error,
+    isLoading: isContractLoading,
+  } = useReadContract({
+    ...wagmiContractConfig,
+    functionName: "getBeer",
+    args: [currentId],
+  });
 
   useEffect(() => {
-    const fetchFavoritesInitially = () => {
-      const storedFavorites: Beer[] = JSON.parse(
-        localStorage.getItem("punkBeerFavorites") || "[]"
-      );
-      const beerIds = storedFavorites.map((beer) => beer.id).join("|");
+    const storedFavorites: number[] = JSON.parse(
+      localStorage.getItem("punkBeerFavorites") || "[]"
+    ).map((fav: Beer) => fav.id);
+    setCurrentIds(storedFavorites);
+  }, []);
 
-      if (beerIds) {
-        makeRequest("GET", `?ids=${beerIds}`);
+  useEffect(() => {
+    if (!isContractLoading && currentId !== undefined) {
+      if (data) {
+        const beerData: Beer = {
+          id: currentId,
+          name: data[0 as keyof typeof data],
+          image_url: data[1 as keyof typeof data],
+          brewery: data[2 as keyof typeof data],
+          alcoholPercentage: Number(data[3 as keyof typeof data]),
+          beerType: data[4 as keyof typeof data],
+          price: Number(data[5 as keyof typeof data]),
+        };
+        setFavorites((prev) => [...prev, beerData]);
+        checkForUpdates(favorites);
+        setIsLoading(false);
       }
-    };
-
-    fetchFavoritesInitially();
-  }, [makeRequest]);
-
-  useEffect(() => {
-    const updateFavoritesFromLocalStorage = () => {
-      const storedFavorites: Beer[] = JSON.parse(
-        localStorage.getItem("punkBeerFavorites") || "[]"
-      );
-      setFavorites(storedFavorites);
-    };
-
-    if (response) {
-      setFavorites(response);
-
-      const storedFavorites: Beer[] = JSON.parse(
-        localStorage.getItem("punkBeerFavorites") || "[]"
-      );
-      const updates = response.reduce<{ [key: number]: boolean }>(
-        (acc, currentBeer) => {
-          const storedBeer = storedFavorites.find(
-            (b) => b.id === currentBeer.id
-          );
-          const isUpdated =
-            storedBeer &&
-            JSON.stringify(storedBeer) !== JSON.stringify(currentBeer);
-          acc[currentBeer.id] = !!isUpdated;
-          return acc;
-        },
-        {}
-      );
-      setUpdatedBeers(updates);
+      if (error) {
+        console.error(
+          `Failed to fetch beer with ID ${currentId}: ${error.message}`
+        );
+      }
+      setCurrentIds((ids) => ids.slice(1));
+      setIsLoading(false);
     }
+    setIsLoading(currentIds.length > 1);
+  }, [data, error, isContractLoading, currentId, currentIds.length, favorites]);
 
-    window.addEventListener(
-      "favoritesUpdated",
-      updateFavoritesFromLocalStorage
+  const checkForUpdates = (updatedFavorites: Beer[]) => {
+    const storedFavorites: Beer[] = JSON.parse(
+      localStorage.getItem("punkBeerFavorites") || "[]"
+    );
+    const updates = updatedFavorites.reduce<{ [key: number]: boolean }>(
+      (acc, updatedBeer) => {
+        const foundBeer = storedFavorites.find(
+          (beer) => beer.id === updatedBeer.id
+        );
+        if (
+          foundBeer &&
+          JSON.stringify(foundBeer) !== JSON.stringify(updatedBeer)
+        ) {
+          acc[updatedBeer.id] = true;
+        }
+        return acc;
+      },
+      {}
     );
 
-    return () =>
-      window.removeEventListener(
-        "favoritesUpdated",
-        updateFavoritesFromLocalStorage
-      );
-  }, [response]);
+    setUpdatedBeers(updates);
+  };
+
+  if (isLoading) return <Loader />;
 
   return (
     <div className="container mt-4">
       <h2>Favorites</h2>
-      {isLoading ? (
-        <Loader />
-      ) : error ? (
-        <div className="alert alert-danger" role="alert">
-          {error}
-        </div>
-      ) : favorites.length === 0 ? (
-        <div className="d-flex justify-content-center align-items-center min-vh-100">
-          <div className="text-center">
-            <p className="fs-4">You have no favorite beers yet.</p>
-          </div>
-        </div>
-      ) : (
-        <div className="row">
-          {favorites.map((beer) => (
-            <BeerCard
-              key={beer.id}
-              beer={beer}
-              isUpdated={updatedBeers[beer.id]}
-            />
-          ))}
-        </div>
+      {!isLoading && favorites.length === 0 && (
+        <div>No favorite beers found.</div>
       )}
+      <div className="row">
+        {favorites.map((beer, index) => (
+          <BeerCard
+            key={index}
+            beer={beer}
+            isUpdated={!!updatedBeers[beer.id]}
+          />
+        ))}
+      </div>
     </div>
   );
 };
